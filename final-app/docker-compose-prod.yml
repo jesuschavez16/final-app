@@ -1,0 +1,38 @@
+version: '3.3'
+
+services:
+
+ alquiler:
+   build:
+     context: ./services/alquiler
+     dockerfile: Dockerfile-prod
+   #volumes:
+   #  - './services/alquiler:/usr/src/app'
+   ports:
+     - 5000
+   environment:
+     #- FLASK_APP=project/__init__.py
+     - FLASK_ENV=production
+     - APP_SETTINGS=project.config.ProductionConfig
+     - DATABASE_URL=postgres://postgres:postgres@alquiler-db:5432/alquiler_prod
+     - DATABASE_TEST_URL=postgres://postgres:postgres@alquiler-db:5432/alquiler_test
+
+ alquiler-db:  # nuevo
+   build:
+     context: ./services/alquiler/project/db
+     dockerfile: Dockerfile
+   ports:
+     - 5432
+   environment:
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=postgres
+
+  nginx:
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile-prod
+    restart: always
+    ports:
+      - 80:80
+    depends_on:
+      - alquiler
